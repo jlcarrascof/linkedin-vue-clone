@@ -8,6 +8,11 @@ import {
   MessageSquare, 
   Bell 
 } from 'lucide-vue-next';
+import { useUserStore } from '@/stores/user';
+import SignInButton from './SignInButton.vue';
+import UserButton from './UserButton.vue';
+
+const userStore = useUserStore();
 
 // Datos de navegación (Más limpio que repetir <a> 5 veces)
 const navItems = [
