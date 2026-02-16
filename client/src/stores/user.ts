@@ -34,6 +34,4 @@ export const useUserStore = defineStore('user', () => {
   }
 
   return { user, isSignedIn, signIn, signOut };
-
-
 })
