@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Header from '@/components/Header.vue';
 import Sidebar from '@/components/Sidebar.vue';
+import PostForm from '@/components/PostForm.vue';
 </script>
 
 <template>
@@ -16,10 +17,10 @@ import Sidebar from '@/components/Sidebar.vue';
          </aside>
 
          <section class="col-span-1 md:col-span-6 lg:col-span-4 space-y-4">
-            <div class="bg-white rounded-lg shadow p-4 h-screen">
-                <h2 class="text-xl font-light text-slate-400 text-center mt-10">
-                   Feed (Aquí van los Posts)
-                </h2>
+            <PostForm />
+
+            <div class="bg-white rounded-lg shadow p-4 text-center text-slate-400">
+               <p>Próximamente: Lista de Posts...</p>
             </div>
          </section>
 
