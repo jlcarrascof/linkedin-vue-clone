@@ -20,6 +20,38 @@ const handleImageClick = () => {
   fileInputRef.value?.click();
 };    
 
+// Cuando el usuario selecciona una foto
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    const file = target.files[0];
+    selectedFile.value = file;
+    // Magia: Creamos una URL temporal para ver la foto al instante
+    previewUrl.value = URL.createObjectURL(file);
+  }
+};
+
+// Quitar la foto seleccionada
+const removeImage = () => {
+  selectedFile.value = null;
+  previewUrl.value = null;
+  if (fileInputRef.value) fileInputRef.value.value = '';
+};
+
+// Enviar el Post (Por ahora solo loguea)
+const handleSubmit = async () => {
+  if (!text.value && !selectedFile.value) return;
+
+  console.log("Enviando post...", { 
+    text: text.value, 
+    file: selectedFile.value 
+  });
+
+  // Resetear formulario
+  text.value = '';
+  removeImage();
+};
+
 </script>    
     
     
