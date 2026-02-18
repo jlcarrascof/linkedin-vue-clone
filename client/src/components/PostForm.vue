@@ -80,7 +80,40 @@ const handleSubmit = async () => {
       >
         <X :size="16" />
       </button>
-    </div>    
+    </div>
+    
+    <div class="flex justify-between items-center pt-2">
+      <div class="flex items-center">
+        <button 
+          @click="handleImageClick"
+          class="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-md transition text-gray-500"
+        >
+          <ImageIcon :size="20" class="text-blue-500" />
+          <span class="text-sm font-semibold text-gray-600">Media</span>
+        </button>
+
+        <input 
+          ref="fileInputRef"
+          type="file" 
+          accept="image/*" 
+          class="hidden"
+          @change="handleFileChange"
+        />
+      </div>
+
+      <button 
+        @click="handleSubmit"
+        :disabled="!text && !selectedFile"
+        class="bg-blue-600 text-white px-4 py-1.5 rounded-full font-semibold text-sm hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Publicar
+      </button>
+    </div>
+  </div>
+  
+  <div v-else class="bg-white rounded-lg shadow p-8 text-center border border-gray-200 mb-4">
+    <h3 class="text-lg font-semibold text-gray-700">¡Hola, visitante!</h3>
+    <p class="text-gray-500 mb-4">Inicia sesión para compartir tus ideas con el mundo.</p>
   </div>  
 </template>    
 
