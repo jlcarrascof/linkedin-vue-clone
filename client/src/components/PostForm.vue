@@ -53,5 +53,11 @@ const handleSubmit = async () => {
 };
 
 </script>    
-    
+
+<template>
+  <div v-if="userStore.isSignedIn" class="bg-white rounded-lg shadow p-4 mb-4 border border-gray-200">
+
+  </div>  
+</template>    
+
     
