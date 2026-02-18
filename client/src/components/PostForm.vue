@@ -56,7 +56,31 @@ const handleSubmit = async () => {
 
 <template>
   <div v-if="userStore.isSignedIn" class="bg-white rounded-lg shadow p-4 mb-4 border border-gray-200">
+    <div class="flex space-x-4 items-center mb-4">
+      <img 
+        :src="userStore.user?.imageUrl || 'https://github.com/shadcn.png'" 
+        alt="Avatar" 
+        class="h-12 w-12 rounded-full border border-gray-200"
+      />
+      
+      <input 
+        v-model="text"
+        type="text" 
+        placeholder="Crear publicación" 
+        class="flex-1 rounded-full border border-gray-400 py-3 px-4 font-semibold text-gray-600 hover:bg-gray-100 transition focus:outline-none focus:ring-1 focus:ring-gray-400 cursor-text"
+        @keyup.enter="handleSubmit"
+      />
+    </div>
 
+    <div v-if="previewUrl" class="relative mb-4">
+      <img :src="previewUrl" alt="Preview" class="w-full object-contain max-h-60 rounded-md bg-gray-50" />
+      <button 
+        @click="removeImage"
+        class="absolute top-2 right-2 bg-gray-800 text-white rounded-full p-1 hover:bg-gray-600 transition"
+      >
+        <X :size="16" />
+      </button>
+    </div>    
   </div>  
 </template>    
 
