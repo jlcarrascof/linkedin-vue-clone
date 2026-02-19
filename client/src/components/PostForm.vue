@@ -142,10 +142,10 @@ const handleSubmit = async () => {
 
       <button 
         @click="handleSubmit"
-        :disabled="!text && !selectedFile"
+        :disabled="(!text && !selectedFile) || isSubmitting"
         class="bg-blue-600 text-white px-4 py-1.5 rounded-full font-semibold text-sm hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Publicar
+        {{ isSubmitting ? 'Publicando...' : 'Publicar' }}
       </button>
     </div>
   </div>
