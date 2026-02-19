@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { 
   Search, 
   Home, 
@@ -8,8 +7,14 @@ import {
   MessageSquare, 
   Bell 
 } from 'lucide-vue-next';
+import { useUserStore } from '@/stores/user';
+import SignInButton from './SignInButton.vue';
+import UserButton from './UserButton.vue';
 
-// Datos de navegación (Más limpio que repetir <a> 5 veces)
+// 1. Instanciamos el Store (Este es tu nuevo cerebro)
+const userStore = useUserStore();
+
+// 2. Datos de navegación estáticos
 const navItems = [
   { icon: Home, label: 'Inicio', active: true },
   { icon: Users, label: 'Mi Red', active: false },
@@ -18,7 +23,6 @@ const navItems = [
   { icon: Bell, label: 'Notificaciones', active: false },
 ];
 
-const isLoggedIn = ref(false); // Simulamos estado de sesión por ahora
 </script>
 
 <template>
@@ -52,20 +56,15 @@ const isLoggedIn = ref(false); // Simulamos estado de sesión por ahora
 
         <div class="h-8 w-px bg-gray-200 hidden md:block"></div>
 
-        <div v-if="!isLoggedIn" class="flex items-center gap-2">
-           <button class="text-gray-500 font-semibold text-sm hover:text-blue-600">Unirse ahora</button>
-           <button class="border border-blue-600 text-blue-600 rounded-full px-5 py-1.5 font-semibold hover:bg-blue-50 transition text-sm">
-             Iniciar sesión
-           </button>
-        </div>
-        
-        <div v-else class="flex flex-col items-center cursor-pointer">
-           <div class="h-8 w-8 rounded-full bg-slate-300 overflow-hidden">
-             <img src="https://github.com/shadcn.png" alt="Avatar" />
-           </div>
-           <span class="text-xs text-gray-500 flex items-center">Yo ▼</span>
-        </div>
+        <div class="ml-auto flex items-center space-x-4">
+          <div v-if="!userStore.isSignedIn" class="flex items-center gap-2">
+              <button class="text-gray-500 font-semibold text-sm hover:text-blue-600">Unirse ahora</button>
+              <SignInButton />
+          </div>
 
+          <UserButton v-else />
+        </div>
+ 
       </nav>
 
     </div>
