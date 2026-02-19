@@ -1,21 +1,61 @@
 import { Router, Request, Response } from 'express';
-import Post from '../models/Post'; // Importamos el modelo que creaste ayer
+import { v2 as cloudinary } from 'cloudinary';
+import { Readable } from 'stream'; // Módulo nativo de Node para manejar flujos de datos
+import Post from '../models/Post';
+import upload from '../middlewares/upload'; // Tu Píldora 12
+
+// 1. Configuramos Cloudinary con las llaves de tu .env
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const router = Router();
 
-// Endpoint para CREAR un post
-router.post('/', async (req: Request, res: Response): Promise<void> => {
-  try {
-    // 1. Extraemos los datos que nos envía el Frontend
-    const { text, imageUrl, user } = req.body;
+// 2. Función auxiliar para subir la imagen en memoria hacia Cloudinary
+const uploadToCloudinary = (buffer: Buffer): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'linkedin-clone-posts' }, // Crea esta carpeta en tu Cloudinary
+      (error, result) => {
+        if (result) resolve(result.secure_url);
+        else reject(error);
+      }
+    );
+    // Convertimos el Buffer de la RAM en un flujo de datos (Stream) que Cloudinary pueda leer
+    Readable.from(buffer).pipe(uploadStream);
+  });
+};
 
-    // 2. Validamos que venga lo mínimo necesario
+// 3. El Endpoint. ¡Nota el middleware upload.single('image') en medio!
+router.post('/', upload.single('image'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const text = req.body.text;
+    
+    // Al usar form-data, los objetos llegan como strings. Debemos parsear el JSON del usuario.
+    let user;
+    try {
+      user = req.body.user ? JSON.parse(req.body.user) : undefined;
+    } catch (e) {
+      console.warn("No se pudo parsear el usuario, usando valores por defecto.");
+    }
+
     if (!text) {
       res.status(400).json({ message: 'El texto del post es obligatorio' });
       return;
     }
 
-    // 3. Creamos el nuevo Post en memoria
+    let imageUrl = '';
+
+    // 4. ¿Multer atrapó un archivo? Si es así, lo subimos a la nube
+    if (req.file) {
+      console.log('🖼️ Archivo detectado, subiendo a Cloudinary...');
+      imageUrl = await uploadToCloudinary(req.file.buffer);
+      console.log('✅ Subida exitosa a Cloudinary:', imageUrl);
+    }
+
+    // 5. Creamos el Post con el texto y la URL de la imagen (si existe)
     const newPost = new Post({
       text,
       imageUrl,
@@ -25,14 +65,11 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       }
     });
 
-    // 4. Lo guardamos en la Base de Datos (MongoDB)
     const savedPost = await newPost.save();
-
-    // 5. Respondemos al Frontend que todo salió bien
     res.status(201).json(savedPost);
 
   } catch (error) {
-    console.error('Error al crear el post:', error);
+    console.error('❌ Error al crear el post:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
@@ -40,7 +77,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 // Endpoint temporal para OBTENER los posts (lo usaremos luego)
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }); // Los más recientes primero
+    const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los posts' });
