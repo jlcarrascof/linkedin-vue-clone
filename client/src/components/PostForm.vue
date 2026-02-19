@@ -9,6 +9,7 @@ const userStore = useUserStore();
 const text = ref('');
 const previewUrl = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
+const isSubmitting = ref(false);  
 
 // Referencia al input oculto del DOM
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -38,50 +39,55 @@ const removeImage = () => {
   if (fileInputRef.value) fileInputRef.value.value = '';
 };
 
-// Enviar el Post (Por ahora solo loguea)
-// Enviar el Post al Backend
+// Enviar el Post al Backend (Ahora con soporte para imágenes)
 const handleSubmit = async () => {
   if (!text.value && !selectedFile.value) return;
 
-  console.log("Preparando envío...");
+  console.log("Preparando envío multimedia...");
+  isSubmitting.value = true; // Bloqueamos el formulario
 
   try {
-    // 1. Preparamos el paquete de datos (Data Transfer Object)
-    const postData = {
-      text: text.value,
-      user: {
-        firstName: userStore.user?.firstName || 'Javier',
-        lastName: userStore.user?.lastName || 'Developer',
-        userImage: userStore.user?.imageUrl || '',
-        title: 'Full Stack en Formación'
-      }
-    };
+    // 1. Creamos un objeto FormData (El estándar para enviar archivos)
+    const formData = new FormData();
+    
+    // 2. Agregamos el texto
+    formData.append('text', text.value);
 
-    // 2. Usamos Fetch API para llamar a tu servidor Node
+    // 3. Agregamos el usuario (Convertido a String porque FormData no acepta Objetos puros)
+    const userData = {
+      firstName: userStore.user?.firstName || 'Javier',
+      lastName: userStore.user?.lastName || 'Martinez',
+      userImage: userStore.user?.imageUrl || '',
+      title: 'Full Stack Developer'
+    };
+    formData.append('user', JSON.stringify(userData));
+
+    // 4. Agregamos el archivo de la imagen (¡Debe llamarse 'image' igual que en el backend!)
+    if (selectedFile.value) {
+      formData.append('image', selectedFile.value);
+    }
+
+    // 5. Usamos Fetch API (¡OJO! No ponemos Content-Type. El navegador lo hace automático con FormData)
     const response = await fetch('http://localhost:3000/api/posts', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(postData)
+      body: formData 
     });
 
-    // 3. Verificamos que el servidor haya respondido con éxito (201 Created)
     if (response.ok) {
       const savedPost = await response.json();
-      console.log('✅ ¡Éxito! Post guardado en Mongo desde Vue:', savedPost);
+      console.log('✅ ¡Éxito! Post guardado con foto:', savedPost);
       
-      // 4. Limpiamos el formulario (Optimistic UI parcial)
+      // 6. Limpiamos el formulario 
       text.value = '';
       removeImage();
-      
-      // TODO: Aquí luego avisaremos al Feed para que se actualice
     } else {
       console.error('❌ Error del servidor al guardar');
     }
 
   } catch (error) {
     console.error('❌ Error de conexión con el Backend:', error);
+  } finally {
+    isSubmitting.value = false; // Desbloqueamos el formulario sin importar si falló o tuvo éxito
   }
 };
 
