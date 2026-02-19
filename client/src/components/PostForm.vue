@@ -39,17 +39,50 @@ const removeImage = () => {
 };
 
 // Enviar el Post (Por ahora solo loguea)
+// Enviar el Post al Backend
 const handleSubmit = async () => {
   if (!text.value && !selectedFile.value) return;
 
-  console.log("Enviando post...", { 
-    text: text.value, 
-    file: selectedFile.value 
-  });
+  console.log("Preparando envío...");
 
-  // Resetear formulario
-  text.value = '';
-  removeImage();
+  try {
+    // 1. Preparamos el paquete de datos (Data Transfer Object)
+    const postData = {
+      text: text.value,
+      user: {
+        firstName: userStore.user?.firstName || 'Javier',
+        lastName: userStore.user?.lastName || 'Developer',
+        userImage: userStore.user?.imageUrl || '',
+        title: 'Full Stack en Formación'
+      }
+    };
+
+    // 2. Usamos Fetch API para llamar a tu servidor Node
+    const response = await fetch('http://localhost:3000/api/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(postData)
+    });
+
+    // 3. Verificamos que el servidor haya respondido con éxito (201 Created)
+    if (response.ok) {
+      const savedPost = await response.json();
+      console.log('✅ ¡Éxito! Post guardado en Mongo desde Vue:', savedPost);
+      
+      // 4. Limpiamos el formulario (Optimistic UI parcial)
+      text.value = '';
+      removeImage();
+      
+      // TODO: Aquí luego avisaremos al Feed para que se actualice
+    } else {
+      console.error('❌ Error del servidor al guardar');
+    }
+
+  } catch (error) {
+    console.error('❌ Error de conexión con el Backend:', error);
+  }
 };
 
 </script>    
