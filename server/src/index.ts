@@ -1,10 +1,8 @@
+import 'dotenv/config'; // Esto carga las variables instantáneamente al iniciar
 import express, { Express, Request, Response } from 'express';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import postRoutes from './routes/post.routes';
-
-dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
