@@ -74,13 +74,23 @@ router.post('/', upload.single('image'), async (req: Request, res: Response): Pr
   }
 });
 
-// Endpoint temporal para OBTENER los posts (lo usaremos luego)
-router.get('/', async (req: Request, res: Response) => {
+// Endpoint para OBTENER todos los posts (El Feed)
+router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('📡 Frontend solicitando el feed de posts...');
+    
+    // 1. Buscamos en MongoDB. 
+    // .sort({ createdAt: -1 }) significa orden descendente (los más recientes primero)
     const posts = await Post.find().sort({ createdAt: -1 });
+
+    // 2. Respondemos con un código 200 (OK) y la lista de posts
     res.status(200).json(posts);
+    
+    console.log(`✅ Se enviaron ${posts.length} posts al cliente.`);
+
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los posts' });
+    console.error('❌ Error al obtener los posts:', error);
+    res.status(500).json({ message: 'Error interno del servidor al cargar el feed' });
   }
 });
 
