@@ -9,6 +9,7 @@ const userStore = useUserStore();
 const text = ref('');
 const previewUrl = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
+const isSubmitting = ref(false);  
 
 // Referencia al input oculto del DOM
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -38,18 +39,56 @@ const removeImage = () => {
   if (fileInputRef.value) fileInputRef.value.value = '';
 };
 
-// Enviar el Post (Por ahora solo loguea)
+// Enviar el Post al Backend (Ahora con soporte para imágenes)
 const handleSubmit = async () => {
   if (!text.value && !selectedFile.value) return;
 
-  console.log("Enviando post...", { 
-    text: text.value, 
-    file: selectedFile.value 
-  });
+  console.log("Preparando envío multimedia...");
+  isSubmitting.value = true; // Bloqueamos el formulario
 
-  // Resetear formulario
-  text.value = '';
-  removeImage();
+  try {
+    // 1. Creamos un objeto FormData (El estándar para enviar archivos)
+    const formData = new FormData();
+    
+    // 2. Agregamos el texto
+    formData.append('text', text.value);
+
+    // 3. Agregamos el usuario (Convertido a String porque FormData no acepta Objetos puros)
+    const userData = {
+      firstName: userStore.user?.firstName || 'Javier',
+      lastName: userStore.user?.lastName || 'Martinez',
+      userImage: userStore.user?.imageUrl || '',
+      title: 'Full Stack Developer'
+    };
+    formData.append('user', JSON.stringify(userData));
+
+    // 4. Agregamos el archivo de la imagen (¡Debe llamarse 'image' igual que en el backend!)
+    if (selectedFile.value) {
+      formData.append('image', selectedFile.value);
+    }
+
+    // 5. Usamos Fetch API (¡OJO! No ponemos Content-Type. El navegador lo hace automático con FormData)
+    const response = await fetch('http://localhost:3000/api/posts', {
+      method: 'POST',
+      body: formData 
+    });
+
+    if (response.ok) {
+      const savedPost = await response.json();
+      console.log('✅ ¡Éxito! Post guardado con foto:', savedPost);
+      
+      // 6. Limpiamos el formulario 
+      text.value = '';
+      removeImage();
+    } else {
+      console.error('❌ Error del servidor al guardar');
+    }
+
+  } catch (error) {
+    console.error('❌ Error de conexión con el Backend:', error);
+  } finally {
+    isSubmitting.value = false; // Desbloqueamos el formulario sin importar si falló o tuvo éxito
+  }
 };
 
 </script>    
@@ -103,10 +142,10 @@ const handleSubmit = async () => {
 
       <button 
         @click="handleSubmit"
-        :disabled="!text && !selectedFile"
+        :disabled="(!text && !selectedFile) || isSubmitting"
         class="bg-blue-600 text-white px-4 py-1.5 rounded-full font-semibold text-sm hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Publicar
+        {{ isSubmitting ? 'Publicando...' : 'Publicar' }}
       </button>
     </div>
   </div>
