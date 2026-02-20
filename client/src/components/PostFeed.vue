@@ -41,3 +41,35 @@ onMounted(() => {
   fetchPosts();
 });
 </script>
+
+<template>
+  <div class="space-y-4">
+    <div v-if="loading" class="text-center text-gray-500 py-4 font-semibold animate-pulse">
+      Cargando publicaciones...
+    </div>
+
+    <div v-else-if="posts.length === 0" class="text-center text-gray-500 py-4">
+      No hay publicaciones aún. ¡Sé el primero en compartir algo!
+    </div>
+
+    <div v-else>
+      <div 
+        v-for="post in posts" 
+        :key="post._id" 
+        class="bg-white rounded-lg shadow p-4 border border-gray-200 mb-4"
+      >
+        <p class="font-bold text-gray-800">{{ post.user.firstName }} {{ post.user.lastName }}</p>
+        <p class="text-sm text-gray-500 mb-2">{{ post.user.title }}</p>
+        
+        <p class="text-gray-700 mt-2">{{ post.text }}</p>
+        
+        <img 
+          v-if="post.imageUrl" 
+          :src="post.imageUrl" 
+          alt="Post adjunto" 
+          class="mt-4 rounded-md max-h-96 w-full object-cover bg-gray-50" 
+        />
+      </div>
+    </div>
+  </div>
+</template>
