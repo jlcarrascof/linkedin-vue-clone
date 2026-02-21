@@ -141,8 +141,8 @@ const submitComment = async () => {
       <span class="flex items-center hover:text-blue-600 cursor-pointer">
         👍 <span class="ml-1">{{ localLikesCount }}</span>
       </span>
-      <span class="hover:text-blue-600 cursor-pointer hover:underline">
-        0 comentarios
+      <span @click="toggleComments" class="hover:text-blue-600 cursor-pointer hover:underline">
+        {{ localComments.length }} comentarios
       </span>
     </div>
 
