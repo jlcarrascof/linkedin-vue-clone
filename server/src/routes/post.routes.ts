@@ -143,4 +143,40 @@ router.put('/:id/like', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// Endpoint para AGREGAR un Comentario
+router.post('/:id/comment', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = req.params.id;
+    const { text, user } = req.body; // Recibimos el texto y quién lo escribió
+
+    if (!text || !user) {
+      res.status(400).json({ message: 'El texto y el usuario son obligatorios' });
+      return;
+    }
+
+    // $push inyecta el nuevo objeto dentro del array "comments"
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { 
+        $push: { 
+          comments: { text, user, createdAt: new Date() } 
+        } 
+      },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      res.status(404).json({ message: 'Publicación no encontrada' });
+      return;
+    }
+
+    console.log(`💬 Nuevo comentario agregado al post ${postId}`);
+    res.status(200).json(updatedPost);
+
+  } catch (error) {
+    console.error('❌ Error al agregar comentario:', error);
+    res.status(500).json({ message: 'Error interno del servidor al comentar' });
+  }
+});
+
 export default router;
