@@ -154,7 +154,7 @@ const submitComment = async () => {
       >
         <span class="text-lg">👍</span> <span class="hidden sm:inline">Recomendar</span>
       </button>
-      <button class="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-3 rounded-md transition font-semibold text-sm">
+      <button @click="toggleComments" class="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-3 rounded-md transition font-semibold text-sm">
         <span class="text-lg">💬</span> <span class="hidden sm:inline">Comentar</span>
       </button>
       <button class="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-3 rounded-md transition font-semibold text-sm">
