@@ -101,7 +101,11 @@ const handleLike = async () => {
     </div>
 
     <div class="flex items-center justify-between px-2 py-1 border-t border-gray-100">
-      <button class="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-3 rounded-md transition font-semibold text-sm">
+      <button 
+        @click="handleLike"
+        :class="isLiked ? 'text-blue-600' : 'text-gray-600'"
+        class="flex-1 flex items-center justify-center gap-2 hover:bg-gray-100 py-3 rounded-md transition font-semibold text-sm"
+      >
         <span class="text-lg">👍</span> <span class="hidden sm:inline">Recomendar</span>
       </button>
       <button class="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-3 rounded-md transition font-semibold text-sm">
