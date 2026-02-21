@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, model } from 'mongoose';
 
-// 1. Definimos la Interfaz (Tipos para TypeScript)
+// 2. Definimos la Interfaz (Tipos para TypeScript)
 export interface IPost extends Document {
   text: string;
   imageUrl?: string;
@@ -11,11 +11,22 @@ export interface IPost extends Document {
     title?: string;
   };
   likes: string[];
+  comments: IComment[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-// 2. Definimos el Esquema (Reglas para MongoDB)
+// 3.- Agrega esta interfaz si tienes tus interfaces definidas en este archivo
+export interface IComment {
+  text: string;
+  user: {
+    firstName: string;
+    lastName: string;
+    userImage?: string;
+  };
+  createdAt: Date;
+}
+
 const PostSchema = new Schema<IPost>(
   {
     text: {
@@ -37,6 +48,18 @@ const PostSchema = new Schema<IPost>(
       type: [String],
       default: [],
     },
+    // 👇 NUEVO: Array de comentarios incrustados 👇
+    comments: [
+      {
+        text: { type: String, required: true },
+        user: {
+          firstName: { type: String, required: true },
+          lastName: { type: String, required: true },
+          userImage: { type: String },
+        },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ]
   },
   {
     timestamps: true,

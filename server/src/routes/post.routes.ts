@@ -74,13 +74,108 @@ router.post('/', upload.single('image'), async (req: Request, res: Response): Pr
   }
 });
 
-// Endpoint temporal para OBTENER los posts (lo usaremos luego)
-router.get('/', async (req: Request, res: Response) => {
+// Endpoint para OBTENER todos los posts (El Feed)
+router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('📡 Frontend solicitando el feed de posts...');
+    
+    // 1. Buscamos en MongoDB. 
+    // .sort({ createdAt: -1 }) significa orden descendente (los más recientes primero)
     const posts = await Post.find().sort({ createdAt: -1 });
+
+    // 2. Respondemos con un código 200 (OK) y la lista de posts
     res.status(200).json(posts);
+    
+    console.log(`✅ Se enviaron ${posts.length} posts al cliente.`);
+
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los posts' });
+    console.error('❌ Error al obtener los posts:', error);
+    res.status(500).json({ message: 'Error interno del servidor al cargar el feed' });
+  }
+});
+
+// Endpoint para DAR/QUITAR Like (Toggle)
+router.put('/:id/like', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = req.params.id;
+    // Como aún no tenemos sistema de Auth (Clerk/JWT), simularemos el ID del usuario
+    // En producción, esto vendrá del token de seguridad (req.user.id)
+    const { userId } = req.body; 
+
+    if (!userId) {
+      res.status(400).json({ message: 'Se requiere el userId para dar like' });
+      return;
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ message: 'Publicación no encontrada' });
+      return;
+    }
+
+    // Lógica Toggle: Comprobamos si el usuario ya está en el array de likes
+    const hasLiked = post.likes.includes(userId);
+    let updatedPost;
+
+    if (hasLiked) {
+      // Si ya dio like, lo quitamos usando $pull
+      updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        { $pull: { likes: userId } },
+        { new: true } // Devuelve el documento actualizado
+      );
+      console.log(`👎 Like removido del post ${postId}`);
+    } else {
+      // Si no ha dado like, lo agregamos usando $addToSet (evita duplicados)
+      updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        { $addToSet: { likes: userId } },
+        { new: true }
+      );
+      console.log(`👍 Like agregado al post ${postId}`);
+    }
+
+    res.status(200).json(updatedPost);
+
+  } catch (error) {
+    console.error('❌ Error al procesar el like:', error);
+    res.status(500).json({ message: 'Error interno del servidor al procesar el like' });
+  }
+});
+
+// Endpoint para AGREGAR un Comentario
+router.post('/:id/comment', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = req.params.id;
+    const { text, user } = req.body; // Recibimos el texto y quién lo escribió
+
+    if (!text || !user) {
+      res.status(400).json({ message: 'El texto y el usuario son obligatorios' });
+      return;
+    }
+
+    // $push inyecta el nuevo objeto dentro del array "comments"
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { 
+        $push: { 
+          comments: { text, user, createdAt: new Date() } 
+        } 
+      },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      res.status(404).json({ message: 'Publicación no encontrada' });
+      return;
+    }
+
+    console.log(`💬 Nuevo comentario agregado al post ${postId}`);
+    res.status(200).json(updatedPost);
+
+  } catch (error) {
+    console.error('❌ Error al agregar comentario:', error);
+    res.status(500).json({ message: 'Error interno del servidor al comentar' });
   }
 });
 
