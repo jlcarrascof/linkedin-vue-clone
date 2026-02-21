@@ -26,7 +26,6 @@ export interface IComment {
   createdAt: Date;
 }
 
-// 2. Definimos el Esquema (Reglas para MongoDB)
 const PostSchema = new Schema<IPost>(
   {
     text: {
@@ -48,6 +47,18 @@ const PostSchema = new Schema<IPost>(
       type: [String],
       default: [],
     },
+    // 👇 NUEVO: Array de comentarios incrustados 👇
+    comments: [
+      {
+        text: { type: String, required: true },
+        user: {
+          firstName: { type: String, required: true },
+          lastName: { type: String, required: true },
+          userImage: { type: String },
+        },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ]
   },
   {
     timestamps: true,
