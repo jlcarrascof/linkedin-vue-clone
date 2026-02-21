@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 
-// 1. Definimos la misma interfaz para tipar el Prop que recibiremos
 interface PostData {
   _id: string;
   text: string;
@@ -16,16 +15,47 @@ interface PostData {
   createdAt: string;
 }
 
-// 2. Declaramos que este componente RECIBE un prop llamado "post"
 const props = defineProps<{
   post: PostData;
 }>();
 
-// 3. Pequeña utilidad para formatear la fecha
 const formattedDate = computed(() => {
   const date = new Date(props.post.createdAt);
   return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
 });
+
+// --- LÓGICA DE LIKES (OPTIMISTIC UI) ---
+// Usaremos un ID de usuario estático (simulando que Javier está logueado)
+const CURRENT_USER_ID = "javier_master_123"; 
+
+const isLiked = ref(props.post.likes?.includes(CURRENT_USER_ID) || false);
+const localLikesCount = ref(props.post.likes?.length || 0);
+
+const handleLike = async () => {
+  // 1. Optimistic UI: Cambiamos la interfaz inmediatamente antes de ir al backend
+  isLiked.value = !isLiked.value;
+  localLikesCount.value += isLiked.value ? 1 : -1;
+
+  try {
+    // 2. Disparamos la petición al backend en segundo plano
+    const response = await fetch(`http://localhost:3000/api/posts/${props.post._id}/like`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId: CURRENT_USER_ID })
+    });
+
+    if (!response.ok) {
+      throw new Error('El servidor rechazó el like');
+    }
+  } catch (error) {
+    console.error('❌ Error dando like, revirtiendo estado...', error);
+    // 3. Rollback: Si falla el backend, deshacemos el cambio visual
+    isLiked.value = !isLiked.value;
+    localLikesCount.value += isLiked.value ? 1 : -1;
+  }
+};
 </script>
 
 <template>
