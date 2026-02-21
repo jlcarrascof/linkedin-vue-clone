@@ -94,4 +94,53 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// Endpoint para DAR/QUITAR Like (Toggle)
+router.put('/:id/like', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const postId = req.params.id;
+    // Como aún no tenemos sistema de Auth (Clerk/JWT), simularemos el ID del usuario
+    // En producción, esto vendrá del token de seguridad (req.user.id)
+    const { userId } = req.body; 
+
+    if (!userId) {
+      res.status(400).json({ message: 'Se requiere el userId para dar like' });
+      return;
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      res.status(404).json({ message: 'Publicación no encontrada' });
+      return;
+    }
+
+    // Lógica Toggle: Comprobamos si el usuario ya está en el array de likes
+    const hasLiked = post.likes.includes(userId);
+    let updatedPost;
+
+    if (hasLiked) {
+      // Si ya dio like, lo quitamos usando $pull
+      updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        { $pull: { likes: userId } },
+        { new: true } // Devuelve el documento actualizado
+      );
+      console.log(`👎 Like removido del post ${postId}`);
+    } else {
+      // Si no ha dado like, lo agregamos usando $addToSet (evita duplicados)
+      updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        { $addToSet: { likes: userId } },
+        { new: true }
+      );
+      console.log(`👍 Like agregado al post ${postId}`);
+    }
+
+    res.status(200).json(updatedPost);
+
+  } catch (error) {
+    console.error('❌ Error al procesar el like:', error);
+    res.status(500).json({ message: 'Error interno del servidor al procesar el like' });
+  }
+});
+
 export default router;
