@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import Post from './Post.vue';
 
 // 1. Tipamos los datos para que TypeScript nos ayude con el autocompletado
 interface Post {
