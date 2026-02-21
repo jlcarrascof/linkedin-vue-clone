@@ -15,6 +15,17 @@ export interface IPost extends Document {
   updatedAt: Date;
 }
 
+// 1.5 Agrega esta interfaz si tienes tus interfaces definidas en este archivo
+export interface IComment {
+  text: string;
+  user: {
+    firstName: string;
+    lastName: string;
+    userImage?: string;
+  };
+  createdAt: Date;
+}
+
 // 2. Definimos el Esquema (Reglas para MongoDB)
 const PostSchema = new Schema<IPost>(
   {
