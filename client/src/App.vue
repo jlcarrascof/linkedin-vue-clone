@@ -2,6 +2,7 @@
 import Header from '@/components/Header.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import PostForm from '@/components/PostForm.vue';
+import PostFeed from '@/components/PostFeed.vue';
 </script>
 
 <template>
@@ -18,7 +19,7 @@ import PostForm from '@/components/PostForm.vue';
 
          <section class="col-span-1 md:col-span-6 lg:col-span-4 space-y-4">
             <PostForm />
-
+            <PostFeed />
             <div class="bg-white rounded-lg shadow p-4 text-center text-slate-400">
                <p>Próximamente: Lista de Posts...</p>
             </div>
