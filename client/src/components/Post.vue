@@ -82,7 +82,6 @@ const submitComment = async () => {
   // 1. Optimistic UI (Lo agregamos a la pantalla al instante)
   const optimisticComment = { ...commentPayload, createdAt: new Date().toISOString(), _id: Math.random().toString() };
   localComments.value.push(optimisticComment);
-  const textToSend = newCommentText.value;
   newCommentText.value = ''; // Limpiamos el input
 
   try {
@@ -163,6 +162,41 @@ const submitComment = async () => {
       <button class="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-3 rounded-md transition font-semibold text-sm">
         <span class="text-lg">✈️</span> <span class="hidden sm:inline">Enviar</span>
       </button>
+    </div>
+
+    <div v-show="showComments" class="px-4 pb-4 bg-slate-50 border-t border-gray-100">
+      
+      <div class="flex items-start gap-2 mt-4 mb-4">
+        <div class="w-8 h-8 rounded-full bg-slate-300 flex-shrink-0 flex items-center justify-center text-slate-600 font-bold text-sm mt-1">
+          J
+        </div>
+        <form @submit.prevent="submitComment" class="flex-1 flex gap-2">
+          <input 
+            v-model="newCommentText" 
+            type="text" 
+            placeholder="Añadir un comentario..." 
+            class="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+          />
+          <button type="submit" v-show="newCommentText.trim().length > 0" class="text-blue-600 font-semibold text-sm px-2 hover:bg-blue-50 rounded-md transition">
+            Publicar
+          </button>
+        </form>
+      </div>
+
+      <div class="space-y-3">
+        <div v-for="comment in localComments" :key="comment._id" class="flex gap-2">
+          <img v-if="comment.user.userImage" :src="comment.user.userImage" class="w-8 h-8 rounded-full object-cover mt-1" />
+          <div v-else class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs mt-1">
+            {{ comment.user.firstName.charAt(0) }}
+          </div>
+          
+          <div class="bg-gray-100 rounded-b-xl rounded-tr-xl px-3 py-2 flex-1">
+            <h4 class="font-bold text-xs text-gray-900">{{ comment.user.firstName }} {{ comment.user.lastName }}</h4>
+            <p class="text-sm text-gray-800 mt-0.5">{{ comment.text }}</p>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
