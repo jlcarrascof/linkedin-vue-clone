@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, model } from 'mongoose';
 
-// 1. Definimos la Interfaz (Tipos para TypeScript)
+// 2. Definimos la Interfaz (Tipos para TypeScript)
 export interface IPost extends Document {
   text: string;
   imageUrl?: string;
@@ -11,11 +11,12 @@ export interface IPost extends Document {
     title?: string;
   };
   likes: string[];
+  comments: IComment[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-// 1.5 Agrega esta interfaz si tienes tus interfaces definidas en este archivo
+// 3.- Agrega esta interfaz si tienes tus interfaces definidas en este archivo
 export interface IComment {
   text: string;
   user: {
