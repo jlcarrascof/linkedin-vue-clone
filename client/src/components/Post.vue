@@ -93,7 +93,7 @@ const handleLike = async () => {
 
     <div class="px-4 py-2 flex items-center justify-between text-xs text-gray-500">
       <span class="flex items-center hover:text-blue-600 cursor-pointer">
-        👍 <span class="ml-1">{{ post.likes?.length || 0 }}</span>
+        👍 <span class="ml-1">{{ localLikesCount }}</span>
       </span>
       <span class="hover:text-blue-600 cursor-pointer hover:underline">
         0 comentarios
