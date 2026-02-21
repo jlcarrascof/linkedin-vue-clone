@@ -1,11 +1,24 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
+// 1. Actualizamos la Interfaz agregando "comments"
+interface Comment {
+  _id?: string;
+  text: string;
+  user: {
+    firstName: string;
+    lastName: string;
+    userImage?: string;
+  };
+  createdAt: string | Date;
+}
+
 interface PostData {
   _id: string;
   text: string;
   imageUrl?: string;
   likes?: string[];
+  comments?: Comment[];
   user: {
     firstName: string;
     lastName: string;
@@ -15,9 +28,7 @@ interface PostData {
   createdAt: string;
 }
 
-const props = defineProps<{
-  post: PostData;
-}>();
+const props = defineProps<{ post: PostData }>();
 
 const formattedDate = computed(() => {
   const date = new Date(props.post.createdAt);
@@ -25,35 +36,70 @@ const formattedDate = computed(() => {
 });
 
 // --- LÓGICA DE LIKES (OPTIMISTIC UI) ---
-// Usaremos un ID de usuario estático (simulando que Javier está logueado)
 const CURRENT_USER_ID = "javier_master_123"; 
-
 const isLiked = ref(props.post.likes?.includes(CURRENT_USER_ID) || false);
 const localLikesCount = ref(props.post.likes?.length || 0);
 
 const handleLike = async () => {
-  // 1. Optimistic UI: Cambiamos la interfaz inmediatamente antes de ir al backend
   isLiked.value = !isLiked.value;
   localLikesCount.value += isLiked.value ? 1 : -1;
-
   try {
-    // 2. Disparamos la petición al backend en segundo plano
     const response = await fetch(`http://localhost:3000/api/posts/${props.post._id}/like`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: CURRENT_USER_ID })
     });
-
-    if (!response.ok) {
-      throw new Error('El servidor rechazó el like');
-    }
+    if (!response.ok) throw new Error('El servidor rechazó el like');
   } catch (error) {
-    console.error('❌ Error dando like, revirtiendo estado...', error);
-    // 3. Rollback: Si falla el backend, deshacemos el cambio visual
     isLiked.value = !isLiked.value;
     localLikesCount.value += isLiked.value ? 1 : -1;
+  }
+};
+
+// --- LÓGICA DE COMENTARIOS ---
+const showComments = ref(false); // Controla si se ve la sección de comentarios
+const newCommentText = ref('');
+// Hacemos una copia reactiva local para aplicar Optimistic UI también en los comentarios
+const localComments = ref<Comment[]>(props.post.comments || []);
+
+const toggleComments = () => {
+  showComments.value = !showComments.value;
+};
+
+const submitComment = async () => {
+  if (!newCommentText.value.trim()) return;
+
+  // Creamos el objeto del comentario falso (simulando tu sesión)
+  const commentPayload = {
+    text: newCommentText.value,
+    user: {
+      firstName: "Javier",
+      lastName: "Developer",
+      userImage: "" // Pon aquí una URL si quieres ver tu foto
+    }
+  };
+
+  // 1. Optimistic UI (Lo agregamos a la pantalla al instante)
+  const optimisticComment = { ...commentPayload, createdAt: new Date().toISOString(), _id: Math.random().toString() };
+  localComments.value.push(optimisticComment);
+  const textToSend = newCommentText.value;
+  newCommentText.value = ''; // Limpiamos el input
+
+  try {
+    // 2. Lo enviamos al Backend
+    const response = await fetch(`http://localhost:3000/api/posts/${props.post._id}/comment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(commentPayload)
+    });
+
+    if (!response.ok) throw new Error('Error al guardar comentario');
+    
+    // Si quisiéramos ser ultra estrictos, reemplazaríamos el array local con la respuesta real del servidor aquí.
+  } catch (error) {
+    console.error(error);
+    // Rollback: quitamos el último comentario si falló
+    localComments.value.pop(); 
   }
 };
 </script>
