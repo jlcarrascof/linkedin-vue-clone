@@ -4,6 +4,8 @@ import { useUserStore } from '@/stores/user';
 import { ImageIcon, X } from 'lucide-vue-next';
 
 const userStore = useUserStore();
+// Declaramos que este componente puede emitir un evento llamado 'post-created'
+const emit = defineEmits(['post-created']);
 
 // 1. Estados Reactivos
 const text = ref('');
@@ -84,6 +86,9 @@ const handleSubmit = async () => {
       text.value = '';
       removeImage();
       isOpen.value = false; 
+
+      // 👇 NUEVO: Le gritamos al padre que el post se creó 👇
+      emit('post-created');
     } else {
       console.error('❌ Error del servidor al guardar');
     }
