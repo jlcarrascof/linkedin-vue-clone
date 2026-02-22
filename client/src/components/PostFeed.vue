@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue';
 import Post from './Post.vue';
 
-// 1. Tipamos los datos para que TypeScript nos ayude con el autocompletado
-interface Post {
+// 1. Tipamos los datos (Renombrado a PostData para no chocar con el componente Post)
+interface PostData {
   _id: string;
   text: string;
   imageUrl?: string;
@@ -17,16 +17,17 @@ interface Post {
 }
 
 // 2. Estados Reactivos
-const posts = ref<Post[]>([]);
+const posts = ref<PostData[]>([]);
 const loading = ref(true);
 
 // 3. Función para buscar los posts al backend
 const fetchPosts = async () => {
+  loading.value = true; // 👇 NUEVO: Reiniciamos el estado de carga al recargar
   try {
     const response = await fetch('http://localhost:3000/api/posts');
     if (response.ok) {
       posts.value = await response.json();
-      console.log('✅ Posts cargados en el Feed:', posts.value);
+      console.log('✅ Posts recargados en el Feed');
     } else {
       console.error('❌ Error del servidor al obtener los posts');
     }
@@ -37,9 +38,14 @@ const fetchPosts = async () => {
   }
 };
 
-// 4. Ciclo de vida: Llamar a la API apenas el componente se monte en pantalla
+// 4. Ciclo de vida: Llamar a la API apenas el componente se monte
 onMounted(() => {
   fetchPosts();
+});
+
+// 5. 👇 NUEVO: Exponemos la función para que HomeView pueda ejecutarla
+defineExpose({
+  fetchPosts
 });
 </script>
 
